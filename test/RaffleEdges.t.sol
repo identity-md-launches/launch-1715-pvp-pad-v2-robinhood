@@ -177,16 +177,18 @@ contract RaffleEdgesTest is BaseTest {
         vm.prank(players[6]);
         uint256 id = pad.launch("Entries Only", "ENT", "");
         PadGame game = PadGame(pad.gameOf(id));
-        assertEq(game.fundedPot(), carryBefore, "carry pot moved into the new game");
-        assertEq(pad.carryPot(), 0);
+        // The carry pot waits in the pad until a raffle seats at least five Imps (revision 1d6515bf):
+        // a launch nobody enters never custodies it.
+        assertEq(game.fundedPot(), 0, "a fresh launch holds no carry");
+        assertEq(pad.carryPot(), carryBefore, "launching moves nothing out of the carry pot");
 
         mintAll(game, 4);
         vm.deal(players[7], 2 ether);
         vm.prank(players[7]);
         king.takeCrown{value: 1 ether}();
         // Four entries: not live for the king, the games share went to the carry pot instead.
-        assertEq(pad.carryPot(), 0.5 ether);
-        assertEq(game.fundedPot(), carryBefore);
+        assertEq(pad.carryPot(), carryBefore + 0.5 ether);
+        assertEq(game.fundedPot(), 0);
 
         vm.prank(players[4]);
         game.enter{value: 0.001 ether}();
@@ -197,19 +199,25 @@ contract RaffleEdgesTest is BaseTest {
         vm.deal(players[8], 2 ether);
         vm.prank(players[8]);
         king.takeCrown{value: 1.1 ether}();
-        uint256 funded = game.fundedPot();
-        assertEq(funded, carryBefore + 0.05 ether, "half of the 0.1 ETH extra reached the signup game");
-        assertEq(game.pot(), funded);
+        assertEq(game.fundedPot(), 0.05 ether, "half of the 0.1 ETH extra reached the signup game");
+        assertEq(game.pot(), 0.05 ether);
         // The hold hour passed signup; the bid's upkeep already committed the draw of this game.
         assertEq(game.status(), 7);
         assertTrue(game.drawCommitted());
+        uint256 carryWaiting = pad.carryPot();
+        assertEq(carryWaiting, carryBefore + 0.5 ether, "the carry still waits in the pad while drawing");
 
-        // The draw seats all five; nobody rolls; the game ends with no living Imps.
+        // The draw seats all five; completing it with five Imps pulls the whole carry pot in.
         arb.advance(4);
         while (!game.drawComplete()) {
             game.draw(32);
         }
         assertEq(game.impCount(), 5);
+        assertEq(pad.carryPot(), 0, "a five-seat draw takes the carry");
+        uint256 funded = game.fundedPot();
+        assertEq(funded, carryWaiting + 0.05 ether, "king share plus the whole carry are funded ETH");
+        assertEq(game.pot(), funded, "nobody rolled: the pot is funded ETH only");
+        // Nobody rolls; the game ends with no living Imps.
         vm.warp(game.playStart() + 10 minutes);
         assertTrue(game.ended());
         uint256 carryPending = pad.carryPot();
