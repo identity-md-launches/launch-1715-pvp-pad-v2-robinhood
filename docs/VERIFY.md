@@ -29,6 +29,12 @@ them as proxies of `PadToken` / `PadGame` once the templates are verified.
 
 Verification is the deployer's step; this repository never broadcasts or calls RPCs.
 
+Source of truth for clones: anyone can deploy their own EIP-1167 proxy to the verified templates and
+initialize a look-alike token or game with the genesis name and symbol (AUDIT #27). Only
+`PvPPad.tokenOf(id)`, `PvPPad.gameOf(id)` and `PvPPad.isGame(address)` identify the pad's launches;
+a site or explorer label must resolve clones through the pad, never through the implementation
+address or the token name.
+
 V2 verification checks
 ----------------------
 

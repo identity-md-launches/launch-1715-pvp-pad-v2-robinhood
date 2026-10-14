@@ -186,12 +186,18 @@ contract AdversarialTest is BaseTest {
         pad.fundCarry{value: 0.3 ether}();
         uint256 id = pad.restartGenesis();
         PadGame g = PadGame(pad.gameOf(id));
+        // the carry waits in the pad until the new genesis is seated with at least five Imps
+        assertEq(pad.carryPot(), 0.3 ether);
+        assertEq(g.pot(), 0);
+        mintAll(g, 5);
+        advance(10 minutes);
+        assertTrue(g.drawComplete());
         assertEq(pad.carryPot(), 0);
         assertEq(g.pot(), 0.3 ether);
         assertEq(g.fundedPot(), 0.3 ether, "carry is funded ETH, not roll income");
         assertEq(g.rollPot(), 0);
         (bool live, uint256 weight) = g.isLiveForKing();
-        assertFalse(live);
+        assertTrue(live);
         assertEq(weight, 0, "funded ETH never weighs in the king split");
     }
 
@@ -717,11 +723,11 @@ contract AdversarialTest is BaseTest {
         assertEq(PadToken(l.token).decimals(), 18);
         PadGame g = PadGame(l.game);
         vm.expectEmit(true, true, false, true);
-        emit Entered(players[0], 0, true);
+        emit Entered(players[0], 1, true); // 1-based, like entryOf / myEntry
         vm.prank(players[0]);
         g.enter{value: 0.001 ether}();
         vm.expectEmit(true, true, false, true);
-        emit Entered(players[1], 1, false);
+        emit Entered(players[1], 2, false);
         vm.prank(players[1]);
         g.enter{value: 0.001 ether}();
     }

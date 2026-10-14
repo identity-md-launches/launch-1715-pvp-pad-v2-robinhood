@@ -190,16 +190,18 @@ contract FuzzTest is BaseTest {
         }
         uint256 carryBefore = pad.carryPot();
         uint256 finalizerBefore = players[11].balance;
+        uint256 cap = pvp.fundedReleaseCap();
         vm.prank(players[11]);
         pvp.finalize();
         // finalizer: 0.5% of the whole pot, max 0.005 ETH, never more than the roll income
         uint256 fee = p * 50 / 10_000;
         if (fee > 0.005 ether) fee = 0.005 ether;
         if (fee > earned) fee = earned;
-        // funded ETH: all returned with fewer than five living, otherwise the part above 3x roll income
+        // funded ETH: all returned with fewer than five living, otherwise the part above the release cap
+        // (3x roll income or 15% of the curve ETH, whichever is smaller)
         uint256 returned;
         if (n < 5) returned = funded;
-        else if (funded > earned * 3) returned = funded - earned * 3;
+        else if (funded > cap) returned = funded - cap;
         uint256 ranks = p - fee - returned;
         uint256 paid = (n + 1) / 2;
         uint256 weightSum = paid * (paid + 1) / 2;
@@ -241,6 +243,9 @@ contract FuzzTest is BaseTest {
         arb.advance(4);
         pvp.resolvePending(64);
         uint256 earned = pvp.rollPot();
+        uint256 cap = pvp.fundedReleaseCap();
+        assertLe(cap, earned * 3);
+        assertLe(cap, pvp.ethRaised() * 15 / 100);
         uint256 carryBefore = pad.carryPot();
         uint256 playersBefore;
         for (uint256 i; i < n; ++i) {
@@ -253,7 +258,7 @@ contract FuzzTest is BaseTest {
         for (uint256 i; i < n; ++i) {
             playersAfter += players[i].balance;
         }
-        uint256 released = n < 5 ? 0 : (funded > earned * 3 ? earned * 3 : funded);
+        uint256 released = n < 5 ? 0 : (funded > cap ? cap : funded);
         uint256 returned = funded - released;
         uint256 toPlayers = playersAfter - playersBefore;
         uint256 toCarry = pad.carryPot() - carryBefore;

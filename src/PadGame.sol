@@ -34,6 +34,11 @@ contract PadGame {
     uint256 public constant FUNDED_MIN_LIVING = 5;
     /// @notice Funded ETH paid out is capped at this multiple of the roll-earned pot; the rest returns to the carry.
     uint256 public constant FUNDED_RELEASE_MULTIPLE = 3;
+    /// @notice Funded ETH paid out is also capped at this share of the curve ETH raised. A sole buyer who
+    /// dumps every token into the graduated pool recovers at most 0.99(1+e)/(1.99+0.99e) of the e ETH
+    /// in the curve (83% at the 4 ETH sell-out), so at least e/(1.99+0.99e) > e/6 stays in the pool
+    /// forever; a release below that is a loss to any sybil however the roll pot was inflated.
+    uint256 public constant FUNDED_RELEASE_CURVE_BPS = 1_500;
     address public constant DEAD = 0x000000000000000000000000000000000000dEaD;
 
     // ---- types ----------------------------------------------------------------------------
@@ -152,8 +157,9 @@ contract PadGame {
         else require(block.timestamp < signupEnd(), "signup over");
         entrants.push(msg.sender);
         entryOf[msg.sender] = entrants.length;
-        emit Entered(msg.sender, entrants.length - 1, first);
+        emit Entered(msg.sender, entrants.length, first);
         IPadLiquidity(liquidity).fundBurn{value: msg.value}();
+        if (first) IPvPPad(pad).noteFirstEntry(launchId);
         IPvPPad(pad).upkeepFor(msg.sender);
     }
 
@@ -209,7 +215,7 @@ contract PadGame {
             address who = entrants[entry];
             imps.push(Imp(who, 0, 0, 0, 0, 0, 0));
             impOf[who] = imps.length;
-            emit Seated(who, imps.length - 1, entry);
+            emit Seated(who, imps.length, entry + 1);
         }
         emit DrawProgress(imps.length, target, drawNonce);
         if (imps.length == target) {
@@ -217,6 +223,9 @@ contract PadGame {
             playStartedAt = uint64(block.timestamp);
             maxActivity = uint64(block.timestamp);
             emit PlayStarted(block.timestamp, block.timestamp + MAX_PLAY);
+            // The carry pot joins a game only once it is seated with enough Imps to ever release it,
+            // so a launch nobody enters never custodies carry (revision finding 1d6515bf).
+            if (imps.length >= FUNDED_MIN_LIVING) IPvPPad(pad).takeCarry(launchId);
         }
     }
 
@@ -369,6 +378,18 @@ contract PadGame {
     /// @notice ETH the pot earned from rolls (8% of each, plus the genesis burn share and sold-out overflow).
     function rollPot() external view returns (uint256) {
         return pot - fundedPot;
+    }
+
+    /// @notice Most funded ETH this game can pay out at its end (with >= 5 living Imps): the smaller of
+    /// 3x the roll-earned pot and 15% of the curve ETH raised. Before finalization, as of now.
+    function fundedReleaseCap() external view returns (uint256) {
+        return _releaseCap(pot - fundedPot);
+    }
+
+    function _releaseCap(uint256 earned) internal view returns (uint256 cap) {
+        cap = earned * FUNDED_RELEASE_MULTIPLE;
+        uint256 curveCap = ethRaised * FUNDED_RELEASE_CURVE_BPS / 10_000;
+        if (curveCap < cap) cap = curveCap;
     }
 
     function signupEnd() public view returns (uint256) {
@@ -545,10 +566,15 @@ contract PadGame {
         if (fee > earned) fee = earned;
         if (finalizer == address(0)) fee = 0;
         p -= fee;
-        // funded ETH is released only to a game with enough living Imps, and at most 3x what rolls earned
+        // funded ETH is released only to a game with enough living Imps, at most 3x what rolls earned
+        // and at most 15% of the curve ETH (the part a token dump cannot pull back out of the pool)
         uint256 returned;
-        if (living < FUNDED_MIN_LIVING) returned = funded;
-        else if (funded > earned * FUNDED_RELEASE_MULTIPLE) returned = funded - earned * FUNDED_RELEASE_MULTIPLE;
+        if (living < FUNDED_MIN_LIVING) {
+            returned = funded;
+        } else {
+            uint256 cap = _releaseCap(earned);
+            if (funded > cap) returned = funded - cap;
+        }
         if (returned > p) returned = p;
         p -= returned;
         bool bell = bellAt != 0 && bellAt == end;

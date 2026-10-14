@@ -77,19 +77,31 @@ needs a separate adversarial review before release.
     bounds). Block numbers from ArbSys are used only for the RNG window. The brief's "timing uses
     ArbSys" was read as the RNG commit window, because L2 block cadence is not a reliable clock.
 
-13. **Funded pots (carry pot, king share) are escrowed inside the game.** `PadGame.fundedPot`
-    tracks ETH the pad put into a pot (carry at creation, king's 50% games share) apart from what
-    rolls earned. At the end it is paid out only if at least `FUNDED_MIN_LIVING` (5) Imps are living,
-    and never more than `FUNDED_RELEASE_MULTIPLE` (3) times the roll-earned pot; whatever is not
-    released returns to the carry pot (`FundedReturned`) and reaches the next launch. The finalizer
-    fee (0.5%, max 0.005 ETH) is paid from roll income only, so no fee can be farmed from funded
-    ETH. The king's weighting uses the roll-earned pot and `fundPot` is pad-only, so a pot cannot be
-    steered by donations. Why the 3x cap: a sybil with five wallets who rolls X ETH gets back its roll
-    pot (8%), at most 3x that from funded ETH (24%) and at most about half of the curve ETH by dumping
-    its tokens into the graduated pool (45%), about 77% of X: capturing funded ETH costs more than it
-    returns. Five paid entries now make a launch "live" during signup/drawing, and five seats do so after
-    drawing (no EOA check); that share is still capped by the game's own roll income and otherwise
-    returns to the carry. Revision findings 66c81d1d and 5832a371.
+13. **Funded pots (carry pot, king share) are escrowed inside the game and released under two caps.**
+    `PadGame.fundedPot` tracks ETH the pad put into a pot (carry taken at draw completion, king's 50%
+    games share) apart from what rolls earned. At the end it is paid out only if at least
+    `FUNDED_MIN_LIVING` (5) Imps are living, and never more than `fundedReleaseCap()` = min(3x the
+    roll-earned pot, 15% of the curve ETH raised); whatever is not released returns to the carry pot
+    (`FundedReturned`) and waits in the pad for the next game that seats five Imps. The finalizer fee
+    (0.5%, max 0.005 ETH) is paid from roll income only. The king's weighting uses the roll-earned pot
+    and `fundPot` is pad-only, so a pot cannot be steered by donations.
+    Why a curve-based cap (revision finding 22ea8fdb): the earlier 3x rule rested on a sybil recovering
+    about 45% of its curve ETH by dumping tokens, which was wrong. After a raise of e ETH the pool holds
+    e ETH against e/(1+e) of the remaining tokens while a sole buyer holds (1+e) times the pool's token
+    reserve, so dumping everything returns 0.99(1+e)/(1.99+0.99e) of the curve ETH: 66% at e = 1,
+    83% at the 4 ETH sell-out. With 3x, a five-wallet sybil that filled an idle launch took the king's
+    share at a profit (the reviewer measured +0.15 ETH on a 3.4 ETH raise). The part of the curve ETH
+    a dump can never pull back is e/(1.99+0.99e) >= e/5.95 for e <= 4, so a release of at most 15% of e
+    is below it for every raise; the sybil also loses the 2% burn share, the 1% pool fee and gas, and
+    the roll-earned pot inflated by rolling past sell-out (98% of each roll) no longer lifts the cap,
+    because `ethRaised` stops at 4 ETH. Worst case for the defence is the sell-out: net loss at least
+    4% of the curve ETH plus burn and gas, about 0.16 ETH on 4.44 ETH of rolls; smaller raises lose
+    more. `test_soleBuyerSybilLosesMoneyEvenAfterDumpingEveryTokenAndTakingTheCappedRelease` plays
+    this on the real PoolManager with a 5 ETH funded pot on offer: 0.441 ETH raised, 0.395 ETH net
+    outlay after the capped release, 0.259 ETH back from the dump. The cost is that the king's share
+    drips out at 15% of each raise and the rest carries forward; the owner may revisit the constant.
+    Five paid entries make a launch "live" during signup/drawing, and five seats do so after drawing
+    (no EOA check). Revision findings 66c81d1d, 5832a371 and 22ea8fdb.
 14. **Upkeep callers and fees.** `KingOfThePad.takeCrown` runs `pad.upkeepFor(msg.sender)`, so a
     finalizer fee paid by that upkeep goes to the bidder, not to the king contract (which cannot
     claim). `upkeepFor` accepts games and the king contract only. Revision finding f7386928.
@@ -116,6 +128,16 @@ needs a separate adversarial review before release.
     and caught. Tests inject pool and distributor reverts and verify payment-before-crown ordering.
     More than eight pools, failed pools, and fees earned later during upkeep may pay a future king;
     the design does not checkpoint an unbounded historical entitlement.
+    Revision finding e2ea0e40: `PadLiquidity.claim` used the same `locked` flag as `distribute` while
+    handing all gas to the claimer, so a former king with a parked claimable could bid from inside its
+    claim callback; the pre-crown `distribute(8)` then reverted `reentrancy`, the catch swallowed it
+    and the sitting king lost the fees of its reign to the usurper. Fixed twice over: `claim` has its
+    own lock (`claimLocked`), so the pool guard is never held while untrusted code runs, and
+    `takeCrown` no longer swallows a `reentrancy` revert from the distributor (`liquidity busy`); every
+    other distributor failure is still caught, and pool failures stay isolated inside `distribute`.
+    Tests: the reviewer's proof scenario, the mocked `reentrancy` and `pool` reasons, and the separate
+    claim lock. `PadGame.claim` and `KingOfThePad.claim` keep their guards: a claimer holding them can
+    only make that contract's own guarded functions revert, nothing is swallowed.
 22. **Paid Sybil entry remains possible; speed no longer buys seats.** No EOA checks, one entry per
     wallet, no cap on wallets. Every entry costs 0.001 ETH, including unselected wallets. For H honest
     and B bot entries, let N=H+B and S=min(N,200). Bot seats follow Hypergeometric(N,B,S), with mean
@@ -151,9 +173,15 @@ needs a separate adversarial review before release.
     Once seeded, no caller can reset the raffle; a stalled partial draw resumes with the same seed.
     Play and death clocks start only on completion. Statistical tests over 256 different mocked
     future hash triples test both early and late entries; these do not prove unbiased chain hashes.
-    Keepers must capture the seed promptly. A sole keeper could withhold an unfavorable seed until
-    its hash window expires; a competing public caller can prevent this. Sequencer bias/censorship
-    and coordinated keeper withholding remain accepted risks of the requested block-hash mechanism.
+    Keepers must capture the seed promptly. The seed is public from commit+4 but only becomes state
+    when someone calls `draw`, `poke` or any upkeep before commit+258; otherwise the brief's recommit
+    gives a fresh seed. A party that is the only caller in that window therefore holds a free option
+    to decline a seed it dislikes (best-of-k seat sets above 200 entrants, seat order below), and on a
+    quiet chain it can advance the L2 block number itself (revision finding 05a1693c). "Entry order
+    or timing gives no edge" holds for entrants; it does not hold for a sole keeper. Mitigation is
+    operational: run a keeper that draws at commit+4, and note that every entry or roll in any other
+    entered game also advances the draw through upkeep. Sequencer bias/censorship and coordinated
+    keeper withholding remain accepted risks of the requested block-hash mechanism.
 24. **Native settlement selected explicitly.** Real v4 allows anyone to `sync(token)` while locked;
     the synced currency is transient transaction state, not scoped to an unlock caller. The base's
     ETH `settle{value: ...}` could revert when preceded by an unrelated token sync in the same
@@ -166,6 +194,30 @@ needs a separate adversarial review before release.
     decision while retaining deploy order, constructor args, ownership, genesis identity and the
     public day-30 opening fallback. No post-deploy configuration call is needed to complete the
     manifest deployment; opening is the existing intentional public-launch action.
+26. **Carry never parked in a launch nobody enters.** `launch()` is free and permissionless, and the
+    base forwarded the whole carry pot to every new launch at creation; a junk launch with no entry
+    never ends, so the carry was unreachable until a third party paid to enter and waited about 20
+    minutes, and ten free launches pushed every honest game out of the king's last-10 window and out
+    of the latest-game upkeep slot (revision finding 1d6515bf). Now `_create` moves nothing: a game
+    calls `PvPPad.takeCarry` only when its raffle completes with at least `FUNDED_MIN_LIVING` seats
+    (the only games that can ever release funded ETH), and `PvPPad` keeps an `entered` list that a
+    game joins at its first paid entry (`noteFirstEntry`, `SignupStarted`); `fundGames` and `_upkeep`
+    walk that list, so a launch without an entry neither custodies ETH nor displaces one that has.
+    Pushing an entered game out of the window now costs ten paid entries (0.01 ETH) and still leaves
+    the king's share in the carry for the next seated game. Residual: a five-wallet game (0.005 ETH)
+    can take the carry for one round and return it at its end with fewer than five living or above
+    the cap; that is the paid griefing of #4 and the capped sybil of #13.
+27. **Template initializers.** `PadToken.initialize` and `PadGame.initialize` accept any first
+    caller on a clone (the templates themselves are sealed in their constructors). Anyone can deploy
+    their own EIP-1167 proxy to the templates and initialize a look-alike "PVP" token they fully hold
+    (revision finding 879f037c). Protocol funds are unaffected: `PadLiquidity.graduate` accepts only
+    `pad.gameOf(launchId)`, `upkeepFor` only `isGame`, `deployHook` only the pad. The templates
+    deploy before the pad, so they cannot pin it; `PvPPad.tokenOf`, `gameOf` and `isGame` are the only
+    source of truth for a site or an explorer (see `docs/VERIFY.md`).
+28. **Event indexes.** `Entered` and `Seated` now carry the same 1-based entry and seat numbers as
+    `entryOf`, `impOf` and `myEntry` (revision finding 9ce6a613). `SQRT_MIN_FULL` / `SQRT_MAX_FULL`
+    now equal `TickMath.getSqrtPriceAtTick(±887200)` of the vendored v4-core and are asserted against
+    it (finding 561f5bd6); the earlier off-by-one values were covered by the 1 ppm haircut.
 
 ## Edges covered by tests and known gaps
 

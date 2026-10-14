@@ -25,6 +25,8 @@ contract EntryGate {
         opened = true;
     }
     function upkeepFor(address) external {}
+    function noteFirstEntry(uint256) external {}
+    function takeCarry(uint256) external {}
 }
 
 contract ReentrantBurn {

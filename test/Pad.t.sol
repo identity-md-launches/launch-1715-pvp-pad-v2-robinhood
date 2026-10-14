@@ -270,8 +270,16 @@ contract PadTest is BaseTest {
         pad.fundCarry{value: 0.3 ether}();
         assertEq(pad.carryPot(), carryBefore + 0.3 ether);
         uint256 id = pad.launch("Foo", "FOO", "");
+        PadGame g = PadGame(pad.gameOf(id));
+        // a launch custodies nothing until its raffle seats at least five Imps
+        assertEq(pad.carryPot(), carryBefore + 0.3 ether);
+        assertEq(g.pot(), 0);
+        mintAll(g, 5);
+        advance(10 minutes);
+        assertTrue(g.drawComplete());
         assertEq(pad.carryPot(), 0);
-        assertEq(PadGame(pad.gameOf(id)).pot(), carryBefore + 0.3 ether);
+        assertEq(g.pot(), carryBefore + 0.3 ether);
+        assertEq(g.fundedPot(), carryBefore + 0.3 ether);
     }
 
     function test_upkeepForOnlyGames() public {

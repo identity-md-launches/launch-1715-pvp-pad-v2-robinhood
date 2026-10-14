@@ -582,6 +582,9 @@ contract GameTest is BaseTest {
         _setHeight(0, 50);
         assertTrue(pvp.ended() && pvp.bellRang());
         earned = pvp.rollPot();
+        uint256 cap = pvp.fundedReleaseCap();
+        assertEq(cap, pvp.ethRaised() * 15 / 100, "15% of the curve ETH binds before 3x the roll pot here");
+        assertLt(cap, 3 * earned);
         carryBefore = pad.carryPot();
         uint256 sum;
         uint256[5] memory before;
@@ -597,12 +600,12 @@ contract GameTest is BaseTest {
         uint256 fee = (1 ether + earned) * 50 / 10_000;
         if (fee > 0.005 ether) fee = 0.005 ether;
         if (fee > earned) fee = earned;
-        uint256 returned = 1 ether - 3 * earned;
+        uint256 returned = 1 ether - cap;
         uint256 paidOut = 1 ether + earned - fee - returned;
         uint256 carryGain = pad.carryPot() - carryBefore;
         assertGe(carryGain, returned, "unreleased funded ETH returns to the carry (plus dust)");
         assertLe(carryGain - returned, 10, "only rounding dust on top");
-        assertApproxEqAbs(sum, paidOut, 10, "players share roll pot plus 3x of it from the funded pot");
+        assertApproxEqAbs(sum, paidOut, 10, "players share roll pot plus the capped release from the funded pot");
         assertEq(players[9].balance, 10 ether + fee);
     }
 

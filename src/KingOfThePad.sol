@@ -16,6 +16,7 @@ contract KingOfThePad {
     uint256 public constant MIN_BID = 0.01 ether;
     uint256 public constant HOLD = 1 hours;
     uint256 public constant STEP_BPS = 11_000;
+    bytes32 internal constant LIQUIDITY_BUSY = keccak256(abi.encodeWithSignature("Error(string)", "reentrancy"));
 
     IPvPPad public immutable pad;
     IPadLiquidity public immutable liquidity;
@@ -69,8 +70,13 @@ contract KingOfThePad {
         }
         // Settle a bounded backlog to the outgoing king before changing the beneficiary.
         // Individual bad pools are isolated by PadLiquidity; even a failed distributor cannot veto a bid.
+        // A bid placed while PadLiquidity is mid-operation (its lock held) would skip that settlement,
+        // so that one reason is not swallowed; it never comes from a pool, which distribute isolates.
         if (previous != address(0)) {
-            try liquidity.distribute{gas: CROWN_DISTRIBUTE_GAS}(8) {} catch {}
+            try liquidity.distribute{gas: CROWN_DISTRIBUTE_GAS}(8) {}
+            catch (bytes memory reason) {
+                require(keccak256(reason) != LIQUIDITY_BUSY, "liquidity busy");
+            }
         }
         king = msg.sender;
         bid = msg.value;

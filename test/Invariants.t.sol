@@ -180,8 +180,8 @@ contract PadHandler is Test {
             assertEq(id, count + 1);
             assertEq(pad.genesisId(), id);
             assertTrue(PadGame(pad.gameOf(id)).genesis());
-            assertEq(PadGame(pad.gameOf(id)).fundedPot(), carry, "carry pot moves into the new genesis");
-            assertEq(pad.carryPot(), 0);
+            assertEq(PadGame(pad.gameOf(id)).fundedPot(), 0, "a new launch custodies no carry");
+            assertEq(pad.carryPot(), carry, "carry waits in the pad for a seated game");
         } catch {
             assertFalse(failedBefore, "failed genesis could not be restarted");
             assertEq(pad.genesisId(), oldId);

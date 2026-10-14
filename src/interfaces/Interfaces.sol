@@ -86,6 +86,8 @@ interface IPvPPad {
     function upkeep() external;
     function upkeepFor(address caller) external;
     function fundCarry() external payable;
+    function noteFirstEntry(uint256 id) external;
+    function takeCarry(uint256 id) external;
     function genesisGraduated() external view returns (bool);
     function genesisId() external view returns (uint256);
     function launchCount() external view returns (uint256);

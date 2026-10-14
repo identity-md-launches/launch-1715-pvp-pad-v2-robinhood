@@ -46,6 +46,8 @@ contract PvPPad {
 
     Launch[] internal launches;
     mapping(address => bool) public isGame;
+    /// @dev Launch ids in order of first paid entry; the king's window and upkeep walk this list.
+    uint256[] internal entered;
 
     event LiquidityBound(address indexed liquidity);
     event KingBound(address indexed king);
@@ -55,6 +57,7 @@ contract PvPPad {
     );
     event CarryFunded(address indexed from, uint256 amount);
     event CarryPaid(uint256 indexed id, uint256 amount);
+    event SignupStarted(uint256 indexed id);
     event GamesFunded(uint256 amount, uint256 games);
     event GenesisRestarted(uint256 indexed id, uint256 indexed failedId, address indexed by);
 
@@ -144,12 +147,14 @@ contract PvPPad {
         IPadToken(token).initialize(name, ticker, game, liquidity);
         IPadGame(game).initialize(id, token, liquidity, genesis);
         emit Launched(id, token, game, creator, name, ticker);
-        uint256 carry = carryPot;
-        if (carry != 0) {
-            carryPot = 0;
-            IPadGame(game).fundPot{value: carry}();
-            emit CarryPaid(id, carry);
-        }
+    }
+
+    /// @notice A game reports its first paid entry once. Only entered launches take part in upkeep
+    /// and in the king's last-10 window, so a free launch nobody enters cannot crowd them out.
+    function noteFirstEntry(uint256 id) external {
+        require(launches[id - 1].game == msg.sender, "not game");
+        entered.push(id);
+        emit SignupStarted(id);
     }
 
     // ---- pots ------------------------------------------------------------------------------------
@@ -158,23 +163,35 @@ contract PvPPad {
         emit CarryFunded(msg.sender, msg.value);
     }
 
+    /// @notice A game takes the whole carry pot when its raffle completes with at least 5 Imps (checked
+    /// by the game). Carry therefore waits in the pad, never inside a launch that may never run.
+    function takeCarry(uint256 id) external {
+        require(launches[id - 1].game == msg.sender, "not game");
+        uint256 carry = carryPot;
+        if (carry == 0) return;
+        carryPot = 0;
+        IPadGame(msg.sender).fundPot{value: carry}();
+        emit CarryPaid(id, carry);
+    }
+
     /// @notice King's 50% share: live games with >= 5 entries before drawing or Imps after drawing,
-    /// among the last 10 launches, weighted
+    /// among the last 10 entered launches, weighted
     /// by roll-earned pot size (equal split when every pot is empty); none live: carry pot. Each game
-    /// pays funded ETH out only with >= 5 living Imps at its end and at most 3x its roll-earned pot;
-    /// the rest returns here as carry.
+    /// pays funded ETH out only with >= 5 living Imps at its end, at most 3x its roll-earned pot and
+    /// at most 15% of its curve ETH; the rest returns here as carry.
     function fundGames() external payable {
         require(msg.sender == king, "not king");
-        uint256 n = launches.length;
+        uint256 n = entered.length;
         uint256 from = n > KING_MAX_GAMES ? n - KING_MAX_GAMES : 0;
         address[] memory games = new address[](n - from);
         uint256[] memory pots = new uint256[](n - from);
         uint256 count;
         uint256 total;
         for (uint256 i = from; i < n; ++i) {
-            (bool live, uint256 p) = IPadGame(launches[i].game).isLiveForKing();
+            address game = launches[entered[i] - 1].game;
+            (bool live, uint256 p) = IPadGame(game).isLiveForKing();
             if (!live) continue;
-            games[count] = launches[i].game;
+            games[count] = game;
             pots[count] = p;
             total += p;
             ++count;
@@ -195,7 +212,8 @@ contract PvPPad {
     }
 
     // ---- upkeep ----------------------------------------------------------------------------------
-    /// @notice Bounded upkeep: the latest game, one older game (round-robin), two pools, one burn chunk.
+    /// @notice Bounded upkeep: the latest entered game, one older entered game (round-robin), two
+    /// pools, one burn chunk. Launches without an entry have nothing to tend.
     function upkeep() public {
         _upkeep(msg.sender);
     }
@@ -210,14 +228,16 @@ contract PvPPad {
     function _upkeep(address caller) internal {
         if (locked) return;
         locked = true;
-        uint256 n = launches.length;
+        uint256 n = entered.length;
         if (n != 0) {
-            _tend(launches[n - 1].game, caller);
+            _tend(launches[entered[n - 1] - 1].game, caller);
             if (n > 1) {
                 uint256 c = upkeepCursor % (n - 1);
                 upkeepCursor = c + 1;
-                _tend(launches[c].game, caller);
+                _tend(launches[entered[c] - 1].game, caller);
             }
+        }
+        if (launches.length != 0) {
             try IPadLiquidity(liquidity).distribute(2) {} catch {}
             try IPadLiquidity(liquidity).burnChunk() {} catch {}
         }
@@ -242,6 +262,15 @@ contract PvPPad {
 
     function launchCount() external view returns (uint256) {
         return launches.length;
+    }
+
+    /// @notice Number of launches that received a first entry, and the launch id at that position.
+    function enteredCount() external view returns (uint256) {
+        return entered.length;
+    }
+
+    function enteredAt(uint256 i) external view returns (uint256) {
+        return entered[i];
     }
 
     function getLaunch(uint256 id) external view returns (Launch memory) {

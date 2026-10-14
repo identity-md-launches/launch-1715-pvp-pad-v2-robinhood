@@ -27,8 +27,9 @@ contract PadLiquidity is IUnlockCallback {
     int24 public constant TICK_SPACING = 200;
     int24 public constant MIN_TICK = -887_200;
     int24 public constant MAX_TICK = 887_200;
-    uint160 internal constant SQRT_MIN_FULL = 4_310_618_291;
-    uint160 internal constant SQRT_MAX_FULL = 1_456_195_216_270_955_103_182_949_462_556_801_019_286_893_565_306;
+    // TickMath.getSqrtPriceAtTick(-887200) and (887200) of v4-core v4.0.0; asserted in LiquidityV4.t.sol.
+    uint160 public constant SQRT_MIN_FULL = 4_310_618_292;
+    uint160 public constant SQRT_MAX_FULL = 1_456_195_216_270_955_103_206_513_029_158_776_779_468_408_838_535;
     uint160 internal constant MIN_SQRT_PRICE_LIMIT = 4_295_128_740;
     uint160 internal constant MAX_SQRT_PRICE_LIMIT = 1_461_446_703_485_210_103_287_273_052_203_988_822_378_723_970_341;
     uint256 internal constant Q96 = 1 << 96;
@@ -69,6 +70,7 @@ contract PadLiquidity is IUnlockCallback {
     uint256 public totalBurnedEth;
     bool private inUnlock;
     bool private locked;
+    bool private claimLocked;
 
     Pool[] internal pools;
     mapping(uint256 => uint256) public poolIndexOf; // launchId => index + 1
@@ -260,13 +262,19 @@ contract PadLiquidity is IUnlockCallback {
         return uint160(limit);
     }
 
-    function claim() external guard {
+    /// @notice Pays a parked king payment to its owner. Uses its own lock, not the pool `guard`: the
+    /// claimer receives all remaining gas, and holding the pool lock while untrusted code runs would
+    /// let a claimer bid for the crown while `distribute` is unreachable (revision finding e2ea0e40).
+    function claim() external {
+        require(!claimLocked, "reentrancy");
+        claimLocked = true;
         uint256 amount = claimable[msg.sender];
         require(amount != 0, "nothing");
         claimable[msg.sender] = 0;
         (bool ok,) = msg.sender.call{value: amount}("");
         require(ok, "claim failed");
         emit Claimed(msg.sender, amount);
+        claimLocked = false;
     }
 
     // ---- v4 callback -----------------------------------------------------------------------------

@@ -89,8 +89,10 @@ pipeline still checks its factory-specific overhead and final transaction gas.
   `ceil(living/2)` split 80% of the pot with triangular weights (`paid - rank`); bell ringer 20% (no
   bell: all to ranks; none living: carry pot for the next launch). Finalizer gets 0.5% of the pot,
   max 0.005 ETH, paid from roll income only. ETH the pad put into the pot (carry pot, king share;
-  `fundedPot`) is paid out only when at least 5 Imps are living at the end and at most 3x the
-  roll-earned pot (`rollPot()`); the rest returns to the carry pot. `fundPot` is pad-only.
+  `fundedPot`) is paid out only when at least 5 Imps are living at the end and at most
+  `fundedReleaseCap()` = min(3x the roll-earned pot `rollPot()`, 15% of the curve ETH raised); the rest
+  returns to the carry pot, which the next game to complete its draw with at least 5 seats takes
+  (`PvPPad.takeCarry`, event `CarryPaid`). A launch nobody enters never holds carry. `fundPot` is pad-only.
 - **Graduation.** Permissionless after finalization: curve ETH + remaining tokens into a v4 pool
   (native ETH / token, fee 10000, tickSpacing 200, hooks = PadHook) initialized at the final curve
   price, full range (ticks ±887200), owned forever by `PadLiquidity`; excess tokens to `0x…dEaD`.
@@ -107,17 +109,20 @@ pipeline still checks its factory-specific overhead and final transaction gas.
 - **King.** `takeCrown()` payable: first bid ≥ 0.01 ETH, then ≥ 110% of the current bid and only
   after the king held 1 hour. Old king refunded in full at once (push, claimable on failure). Extra
   (new − old; the whole first bid): 50% to pots of live games with ≥ 5 entries during signup/drawing or ≥ 5 Imps after drawing, among the last 10
-  launches, weighted by roll-earned pot (none: carry pot), 25% burn bucket, 25% dev. That share is
+  launches that received a first entry (`enteredCount()` / `enteredAt(i)`; free launches without an entry do not count), weighted by roll-earned pot (none: carry pot), 25% burn bucket, 25% dev. That share is
   funded ETH inside the game and follows the funded-pot rule above. `takeCrown` runs upkeep with the
   bidder as beneficiary of any finalizer fee. Before replacing an existing king, it calls
   `distribute(8)` while the outgoing king is still the beneficiary; the first crown skips this step.
   Each pool collection has a 400k gas cap and independent failure handling; the entire pre-crown
   call has a 4.5M gas cap. A failed pool cannot block the bid or roll back healthy pool collections.
+  The one distributor failure that is not swallowed is its own `reentrancy` guard (`liquidity busy`):
+  a bid placed while `PadLiquidity` is mid-operation would otherwise skip the outgoing king.
+  `PadLiquidity.claim()` has its own lock so a claimer can never hold the pool guard.
   `distribute(n)`: collect LP
   fees from the next min(n, 8, poolCount) pools round-robin, sell the token side (chunk-capped), send all to the king
   (escrowed while there is no king).
 - **Upkeep.** Entry, roll, poke, finalize, graduation, launch and crown actions run bounded pad upkeep:
-  resolve ≤8 rolls and advance the draw/lifecycle on the latest game and one older game round-robin,
+  resolve ≤8 rolls and advance the draw/lifecycle on the latest entered game and one older entered game round-robin,
   `distribute(2)`, and one burn chunk. External lifecycle/fee/burn failures are caught; direct calls
   surface failures for retry. `PadGame.poke()` and `PvPPad.upkeep()` are public. `draw(n)` advances
   only that game's raffle, with no nested pad upkeep.
@@ -135,7 +140,7 @@ pipeline still checks its factory-specific overhead and final transaction gas.
 | `SELL_CHUNK` | 2,000,000 tokens per fee collection | PadLiquidity |
 | `PadLib.PUSH_GAS` | 30,000 gas per ETH push | PadLib |
 | `KING_MAX_GAMES` / `KING_MIN_IMPS` | 10 / 5 | PvPPad |
-| `FUNDED_MIN_LIVING` / `FUNDED_RELEASE_MULTIPLE` | 5 living Imps / 3x the roll-earned pot to pay funded ETH out | PadGame |
+| `FUNDED_MIN_LIVING` / `FUNDED_RELEASE_MULTIPLE` / `FUNDED_RELEASE_CURVE_BPS` | 5 living Imps / 3x the roll-earned pot / 15% of the curve ETH, whichever cap is lower, to pay funded ETH out (see AUDIT #13 for why 15%) | PadGame |
 | `IMPACT_BPS` | 50 (0.5% sqrt price, about 1% price) max move per protocol swap | PadLiquidity |
 | `LIQUIDITY_MARGIN_PPM` | 1 ppm liquidity haircut so the manager never asks for more than held | PadLiquidity |
 | Wall-clock timing | `block.timestamp` for minutes/hours/days; ArbSys block numbers for the RNG commit window | PadGame |
