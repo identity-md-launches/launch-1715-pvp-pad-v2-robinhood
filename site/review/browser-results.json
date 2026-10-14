@@ -1,0 +1,114 @@
+{
+  "checks": [
+    {
+      "name": "390px first screen contains product and primary action",
+      "passed": true
+    },
+    {
+      "name": "hash navigation, launch filters, rules and wallet-free reads",
+      "passed": true
+    },
+    {
+      "name": "wallet picker is keyboard reachable and Escape restores focus",
+      "passed": true
+    },
+    {
+      "name": "EIP-6963 connect, review and 0.001 ETH entry transaction",
+      "passed": true
+    },
+    {
+      "name": "drawing progress, draw(32), and 1-based seat display",
+      "passed": true
+    },
+    {
+      "name": "roll, three L2 block wait, reveal(8), and result animation state",
+      "passed": true
+    },
+    {
+      "name": "ended → finalize → graduate and claim controls",
+      "passed": true
+    },
+    {
+      "name": "buy quote, slippage minimum, v4 router execution",
+      "passed": true
+    },
+    {
+      "name": "sell executes token approval, Permit2 approval, then v4 swap",
+      "passed": true
+    },
+    {
+      "name": "launch UTF-8 validation and changing card preview",
+      "passed": true
+    },
+    {
+      "name": "king bid, distribute(8), both claims, and burnChunk interactions",
+      "passed": true
+    },
+    {
+      "name": "keeper select and permissionless poke",
+      "passed": true
+    },
+    {
+      "name": "owner mines salt in worker, verifies CREATE2 and opens pad",
+      "passed": true
+    },
+    {
+      "name": "RPC error preserves last known data and pauses transactions",
+      "passed": true
+    },
+    {
+      "name": "wallet rejection keeps the user in control and sends no transaction",
+      "passed": true
+    },
+    {
+      "name": "unknown launch rejected, failed genesis restart, and owner deadline access",
+      "passed": true
+    },
+    {
+      "name": "all log reads begin at deployment and use bounded chunks",
+      "passed": true
+    },
+    {
+      "name": "responsive export at 320, 390, 768 and 1440; no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "axe audit of game, wallet dialog, launch and rules",
+      "passed": true
+    },
+    {
+      "name": "no browser script errors",
+      "passed": true
+    },
+    {
+      "name": "wrong-network button adds Robinhood Chain and recovers",
+      "passed": true
+    },
+    {
+      "name": "mobile wallet links and local Coinbase Smart Wallet module",
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "WebKit could not launch: browserType.launch: \n╔══════════════════════════════════════════════════════╗\n║ Host system is missing dependencies to run browsers. ║\n║ Missing libraries:                                   ║\n║     libgtk-4.so.1                                    ║\n║     libgraphene-1.0.so.0                             ║\n║     libevent-2.1.so.7                                ║\n║     libgstallocators-1.0.so.0                        ║\n║     libgstapp-1.0.so.0                               ║\n║     libgstpbutils-1.0.so.0                           ║\n║     libgstaudio-1.0.so.0                             ║\n║     libgsttag-1.0.so.0                               ║\n║     libgstvideo-1.0.so.0                             ║\n║     libgstgl-1.0.so.0                                ║\n║     libgstcodecparsers-1.0.so.0                      ║\n║     libgstfft-1.0.so.0                               ║\n║     libavif.so.16                                    ║\n║     libharfbuzz-icu.so.0                             ║\n║     libwayland-server.so.0                           ║\n║     libmanette-0.2.so.0                              ║\n║     libenchant-2.so.2                                ║\n║     libhyphen.so.0                                   ║\n║     libsecret-1.so.0                                 ║\n║     libwoff2dec.so.1.0.2                             ║\n║     libGLESv2.so.2                                   ║\n╚══════════════════════════════════════════════════════╝"
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "route": "#/game/1",
+      "violations": []
+    },
+    {
+      "route": "#/launch",
+      "violations": []
+    },
+    {
+      "route": "#/rules",
+      "violations": []
+    },
+    {
+      "route": "wallet",
+      "violations": []
+    }
+  ]
+}

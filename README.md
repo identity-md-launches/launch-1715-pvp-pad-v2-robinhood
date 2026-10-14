@@ -1,3 +1,7 @@
+## PvP Pad website
+
+The static frontend for the existing Robinhood Chain deployment is in [site/](site/README.md), with the ready-to-pin production export in `dist/`. See [DESIGN.md](DESIGN.md) for the implemented interface and [site/VALIDATION.md](site/VALIDATION.md) for actual build, interaction and live-read results. Install dependencies outside the repository and rebuild with the commands in the site README. The contracts and their configuration below are unchanged.
+
 # PvP Pad v2
 
 Launchpad on Robinhood Chain (chain id 4663) where every launch is a fast Spireth dice game, all

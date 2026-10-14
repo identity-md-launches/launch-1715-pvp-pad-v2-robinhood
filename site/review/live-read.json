@@ -1,0 +1,49 @@
+{
+  "at": "2026-10-14T14:10:27.969Z",
+  "errors": [],
+  "requests": [
+    "https://rpc.mainnet.chain.robinhood.com"
+  ],
+  "ui": "Pad not open yet\nPvP genesis.\n\nA 50-minute Imp game. A coin at the end.\n\nConnect to check opening access\n\nThe pad is closed. Public opening 11/13/2026, 12:09:39 PM.\n\nEntry\n0.001 ETH\nEntries\n—\nPrize pot\n—\nThe board awaits.\nTwo bells. One finish.\nOn the pad\n\n0 registered launches\n\nLaunch a coin ↗\nAll\nActive\nGraduated\nGenesis comes first\n\nOpening the pad creates the first PvP game. Other coins unlock when PvP graduates.\n\nRead the rules",
+  "status": "Updated 4:10:29 PM · block 88,427,504",
+  "chain": {
+    "chainId": 4663,
+    "block": 88427509,
+    "contracts": [
+      {
+        "name": "PadToken",
+        "address": "0xd26a41fdea19d86b247b734f8738e50e6c9d50cf",
+        "normalizedRuntimeMatches": true
+      },
+      {
+        "name": "PadGame",
+        "address": "0x636566081fa52bf484f406f35fe06d248e37ffb6",
+        "normalizedRuntimeMatches": true
+      },
+      {
+        "name": "PvPPad",
+        "address": "0x801173c677648da466f51a6f0d0ccf272e2422a1",
+        "normalizedRuntimeMatches": true
+      },
+      {
+        "name": "PadLiquidity",
+        "address": "0x6555cc96f9f2193535ef48cfbd90b677493f1881",
+        "normalizedRuntimeMatches": true
+      },
+      {
+        "name": "KingOfThePad",
+        "address": "0x7b9cd0eb6c7ad39bcd3ad218a760cd6429af146a",
+        "normalizedRuntimeMatches": true
+      }
+    ],
+    "opened": false,
+    "launchCount": "0",
+    "owner": "0x5b95A971B4583A5f011E9DA082acdD679b870D06",
+    "openDeadline": "1794568179"
+  },
+  "mobilePrimaryVisible": true,
+  "fonts": {
+    "sans": true,
+    "mono": true
+  }
+}

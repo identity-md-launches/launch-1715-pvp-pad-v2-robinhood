@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#09090b" />
+    <title>PvP Pad · Roll. Rise. Risk it.</title>
+    <meta
+      name="description"
+      content="Enter a 50-minute onchain Imp game on Robinhood Chain. Race to either bell, launch a coin, and compete for the crown. Experimental, unaudited contracts."
+    />
+    <meta property="og:title" content="PvP Pad · A coin. A game. A race." />
+    <meta
+      property="og:description"
+      content="A PvP launchpad on Robinhood Chain. Enter the raffle, roll your Imp, and race to the summit or abyss."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="./assets/social.png" />
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link
+      rel="preload"
+      href="./fonts/geist-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="shell">
+      <header class="header">
+        <a class="brand" href="#/" aria-label="PvP Pad home"
+          ><svg viewBox="0 0 32 32" aria-hidden="true">
+            <path
+              d="m16 1 12 15-12 15L4 16Z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+            <path
+              d="m16 1 5 18-5 12-5-12Zm-12 15 12 3 12-3"
+              fill="none"
+              stroke="currentColor"
+            /></svg
+          ><span>PvP <strong>Pad</strong></span></a
+        >
+        <div class="header-tools">
+          <span class="network"><i></i>Robinhood Chain</span
+          ><button id="connect" class="button small">Connect</button>
+        </div>
+      </header>
+      <nav class="nav" aria-label="Main">
+        <a href="#/" data-route="pad">Pad</a
+        ><a href="#/launch" data-route="launch">Launch</a
+        ><a href="#/king" data-route="king">King</a
+        ><a href="#/burn" data-route="burn">Burn</a
+        ><a href="#/keeper" data-route="keeper">Keeper</a
+        ><a href="#/rules" data-route="rules">Rules</a>
+      </nav>
+      <div id="connection-status" class="status-line">
+        <span class="dot"></span
+        ><span id="sync-label">Connecting to Robinhood Chain…</span
+        ><button id="refresh" class="text-button">Refresh</button>
+      </div>
+      <div id="network-notice"></div>
+      <main id="main" tabindex="-1">
+        <section class="loading">
+          <h1>PvP genesis</h1>
+          <p>Onchain Imp games. Every game launches a coin.</p>
+          <p>Reading the pad…</p>
+        </section>
+      </main>
+      <footer>
+        <div class="footer-brand">PvP Pad <span>· Chain 4663</span></div>
+        <p>
+          Experimental, unaudited contracts. You can lose everything you put in.
+          Not financial advice. Check your local laws.
+        </p>
+        <div class="footer-links">
+          <a href="#/rules">Rules & risks</a
+          ><a
+            href="https://robin.etherscan.io/address/0x801173c677648da466f51a6f0d0ccf272e2422a1"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Verified registry ↗</a
+          ><span>No wallet needed to explore</span>
+        </div>
+      </footer>
+    </div>
+    <dialog id="wallet-dialog" aria-labelledby="wallet-title">
+      <div class="dialog-head">
+        <h2 id="wallet-title">Connect a wallet</h2>
+        <button
+          class="icon-button"
+          data-close="wallet-dialog"
+          aria-label="Close wallet picker"
+        >
+          ×
+        </button>
+      </div>
+      <p>Read freely. Connect to enter or transact.</p>
+      <div id="wallet-options"></div>
+      <p id="wallet-note" role="status"></p>
+    </dialog>
+    <dialog id="tx-dialog" aria-labelledby="tx-title">
+      <div class="dialog-head">
+        <h2 id="tx-title">Review transaction</h2>
+        <button
+          class="icon-button"
+          data-close="tx-dialog"
+          aria-label="Close transaction review"
+        >
+          ×
+        </button>
+      </div>
+      <div id="tx-review"></div>
+      <button id="tx-confirm" class="button primary full">
+        Confirm in wallet
+      </button>
+    </dialog>
+    <section
+      id="toasts"
+      class="toasts"
+      aria-label="Transaction notifications"
+      aria-live="polite"
+    ></section>
+    <noscript
+      >This site needs JavaScript to read the contracts. Enable JavaScript, then
+      reload. You can also inspect PvPPad on the linked block
+      explorer.</noscript
+    >
+  </body>
+</html>
