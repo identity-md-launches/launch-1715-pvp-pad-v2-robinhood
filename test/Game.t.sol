@@ -249,7 +249,7 @@ contract GameTest is BaseTest {
         rollAs(pvp, players[0]);
     }
 
-    function test_hardEndAt60Minutes() public {
+    function test_hardEndAt50MinutesAfterPlayStart() public {
         mintAll(pvp, 1);
         advance(10 minutes);
         for (uint256 i; i < 9; ++i) {
