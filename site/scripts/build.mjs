@@ -2,15 +2,15 @@ import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { toolsDir, requireTool } from "./tools.mjs";
+import { inspectExport } from "./check-export.mjs";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const site = resolve(root, "site");
 const { build } = requireTool("esbuild");
-const externalEthers = {
+const bundledEthers = {
   name: "local-ethers",
   setup(b) {
     b.onResolve({ filter: /^ethers$/ }, () => ({
-      path: "./vendor/ethers.js",
-      external: true,
+      path: resolve(site, "vendor/ethers.js"),
     }));
   },
 };
@@ -25,20 +25,6 @@ const ethersBuild = await build({
   outfile: resolve(site, "vendor/ethers.js"),
   legalComments: "eof",
 });
-await build({
-  entryPoints: [
-    resolve(site, "src/app.ts"),
-    resolve(site, "src/salt-worker.ts"),
-  ],
-  outdir: site,
-  bundle: true,
-  format: "esm",
-  minify: true,
-  target: "es2022",
-  plugins: [externalEthers],
-  legalComments: "eof",
-  nodePaths: [resolve(toolsDir, "node_modules")],
-});
 const coinbaseBuild = await build({
   metafile: true,
   entryPoints: [resolve(site, "src/coinbase.ts")],
@@ -50,6 +36,29 @@ const coinbaseBuild = await build({
   legalComments: "eof",
   nodePaths: [resolve(toolsDir, "node_modules")],
 });
+// Build vendors first, then inline them into each independent entry point.
+// No splitting: the deferred Coinbase import must not emit a runtime chunk.
+const appBuild = await build({
+  entryPoints: [
+    resolve(site, "src/app.ts"),
+    resolve(site, "src/salt-worker.ts"),
+  ],
+  outdir: site,
+  bundle: true,
+  splitting: false,
+  metafile: true,
+  format: "esm",
+  minify: true,
+  target: "es2022",
+  plugins: [bundledEthers],
+  legalComments: "eof",
+  nodePaths: [resolve(toolsDir, "node_modules")],
+});
+for (const [file, output] of Object.entries(appBuild.metafile.outputs)) {
+  if (output.imports.length) {
+    throw new Error(`${file} has runtime imports: ${JSON.stringify(output.imports)}`);
+  }
+}
 for (const [name, file] of [
   ["geist", "geist-latin-wght-normal.woff2"],
   ["geist-mono", "geist-mono-latin-wght-normal.woff2"],
@@ -113,11 +122,15 @@ for (const f of [
   "config.json",
   "abi.json",
   "verification.json",
-  "vendor",
   "fonts",
   "assets",
 ])
   await cp(resolve(site, f), resolve(root, "dist", f), { recursive: true });
-console.log(
-  "Production export: dist/ (all runtime assets local, relative URLs)",
-);
+// Retain every vendor notice, but publish no separately loadable vendor JS.
+await mkdir(resolve(root, "dist/vendor"));
+for (const file of await readdir(resolve(site, "vendor"))) {
+  if (/\.(txt|md)$/i.test(file))
+    await cp(resolve(site, "vendor", file), resolve(root, "dist/vendor", file));
+}
+const audit = await inspectExport();
+console.log(`Production export: dist/ (${audit.fileCount} files, ${audit.totalFileBytes} bytes; self-contained app.js and salt-worker.js)`);

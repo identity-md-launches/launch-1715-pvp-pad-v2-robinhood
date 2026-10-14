@@ -1,5 +1,6 @@
 // Explicitly synthetic contract/RPC fixture. Never loaded by the production export.
 import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import { requireTool } from "../scripts/tools.mjs";
 const {
   Interface,
@@ -86,7 +87,7 @@ export async function fixture() {
   for (const [name, v] of Object.entries(verification.contracts)) {
     const a = JSON.parse(
       await readFile(
-        new URL(`../../out/${name}.sol/${name}.json`, import.meta.url),
+        resolve(process.env.PVP_FOUNDRY_OUT || new URL("../../out", import.meta.url).pathname, `${name}.sol/${name}.json`),
       ),
     );
     codes[v.address.toLowerCase()] = a.deployedBytecode.object;

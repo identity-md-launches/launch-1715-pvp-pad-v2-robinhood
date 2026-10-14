@@ -1,14 +1,14 @@
 {
-  "at": "2026-10-14T14:10:27.969Z",
+  "at": "2026-10-14T15:11:18.708Z",
   "errors": [],
   "requests": [
     "https://rpc.mainnet.chain.robinhood.com"
   ],
-  "ui": "Pad not open yet\nPvP genesis.\n\nA 50-minute Imp game. A coin at the end.\n\nConnect to check opening access\n\nThe pad is closed. Public opening 11/13/2026, 12:09:39 PM.\n\nEntry\n0.001 ETH\nEntries\n—\nPrize pot\n—\nThe board awaits.\nTwo bells. One finish.\nOn the pad\n\n0 registered launches\n\nLaunch a coin ↗\nAll\nActive\nGraduated\nGenesis comes first\n\nOpening the pad creates the first PvP game. Other coins unlock when PvP graduates.\n\nRead the rules",
-  "status": "Updated 4:10:29 PM · block 88,427,504",
+  "ui": "Pad not open yet\nPvP genesis.\n\nA 50-minute Imp game. A coin at the end.\n\nConnect to check opening access\n\nThe pad is closed. Public opening 11/13/2026, 11:09:39 AM.\n\nEntry\n0.001 ETH\nEntries\n—\nPrize pot\n—\nThe board awaits.\nTwo bells. One finish.\nOn the pad\n\n0 registered launches\n\nLaunch a coin ↗\nAll\nActive\nGraduated\nGenesis comes first\n\nOpening the pad creates the first PvP game. Other coins unlock when PvP graduates.\n\nRead the rules",
+  "status": "Updated 3:11:19 PM · block 88,463,846",
   "chain": {
     "chainId": 4663,
-    "block": 88427509,
+    "block": 88463851,
     "contracts": [
       {
         "name": "PadToken",

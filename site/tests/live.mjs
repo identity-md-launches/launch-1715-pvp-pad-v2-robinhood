@@ -2,12 +2,15 @@ import { createServer } from "node:http";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve, extname } from "node:path";
 import { createRequire } from "node:module";
+import { requireTool } from "../scripts/tools.mjs";
+const { Interface, keccak256 } = requireTool("ethers");
 const requireBrowser = createRequire(
   resolve(process.env.PVP_BROWSER_TOOLS || "/tmp/pvp-browser", "package.json"),
 );
 const { chromium } = requireBrowser("playwright");
 const root = resolve(new URL("../..", import.meta.url).pathname),
   dist = resolve(root, "dist");
+const outputDir = resolve(process.env.PVP_CHECK_OUT || "/tmp/pvp-pad-checks");
 const server = createServer(async (req, res) => {
   try {
     const path = decodeURIComponent(
@@ -43,7 +46,7 @@ const browser = await chromium.launch({
     XDG_CACHE_HOME: "/tmp/pvp-xdg-cache",
   },
 });
-await mkdir(resolve(root, "artifacts"), { recursive: true });
+await mkdir(outputDir, { recursive: true });
 const report = { at: new Date().toISOString(), errors: [], requests: [] };
 try {
   const context = await browser.newContext({
@@ -65,14 +68,11 @@ try {
   );
   report.ui = await page.locator("#main").innerText();
   report.status = await page.locator("#sync-label").textContent();
-  report.chain = await page.evaluate(async () => {
-    const [{ Interface, keccak256 }, config, abi, verification] =
-      await Promise.all([
-        import("./vendor/ethers.js"),
-        fetch("./config.json").then((r) => r.json()),
-        fetch("./abi.json").then((r) => r.json()),
-        fetch("./verification.json").then((r) => r.json()),
-      ]);
+  report.chain = await (async () => {
+    const [config, abi, verification] = await Promise.all(
+      ["config.json", "abi.json", "verification.json"].map(async (file) =>
+        JSON.parse(await readFile(resolve(dist, file), "utf8"))),
+    );
     let id = 0;
     const rpc = async (method, params = []) => {
       const r = await fetch(config.rpc, {
@@ -117,14 +117,14 @@ try {
       owner: await view("owner"),
       openDeadline: String(await view("openDeadline")),
     };
-  });
+  })();
   await page.screenshot({
-    path: resolve(root, "artifacts/live-pad-390.png"),
+    path: resolve(outputDir, "live-pad-390.png"),
     fullPage: true,
   });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.screenshot({
-    path: resolve(root, "artifacts/live-pad-1440.png"),
+    path: resolve(outputDir, "live-pad-1440.png"),
     fullPage: true,
   });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -134,7 +134,7 @@ try {
   // Review the unconnected mobile wallet sheet using the real export; do not request signatures.
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator("#connect").click();
-  await page.screenshot({ path: resolve(root, "artifacts/wallet-390.png") });
+  await page.screenshot({ path: resolve(outputDir, "wallet-390.png") });
   await page.keyboard.press("Escape");
   report.fonts = await page.evaluate(() => ({
     sans: document.fonts.check("16px Geist"),
@@ -150,7 +150,7 @@ try {
   await browser.close();
   server.close();
   await writeFile(
-    resolve(root, "artifacts/live-read.json"),
+    resolve(outputDir, "live-read.json"),
     JSON.stringify(report, null, 2) + "\n",
   );
 }

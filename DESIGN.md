@@ -8,6 +8,8 @@ The pad uses a quiet dark interface around the game. A gold action identifies th
 
 The implementation is in `site/style.css`, `site/src/app.ts` and `site/src/board.ts`. Generated `site/app.js` and `dist/` are build outputs.
 
+The 2026-10-14 republish repair preserves the HTML, CSS, fonts and artwork byte for byte, retaining the type scale and page behavior. It changes library packaging: `app.js` contains ethers and the deferred Coinbase connector, and `salt-worker.js` is self-contained. No interface element depends on a separate vendor script. The six-domain review, production browser checks and remaining publication/runtime limitations are recorded in `site/VALIDATION.md`.
+
 ## Colors
 
 All UI colors are semantic CSS variables in `site/style.css:13`.
@@ -69,7 +71,7 @@ Panels and cards use `--radius: 12px`; buttons and inputs use 8 px. Dialogs use 
 - **Statistics and curve:** `stat()` produces semantic description-list cells. `curve()` uses a native progress element with an accessible name and a 4 ETH target.
 - **Cards:** `card()` presents registry identity, phase, counts, pot, curve and the next navigation action. Graduated price and market cap are denominated in ETH.
 - **Forms:** persistent labels, 16 px fields, input hints and adjacent errors. Launch limits are validated in UTF-8 bytes; ticker and name are escaped before rendering. Invalid fields receive `aria-invalid`, an associated message and focus. A preview reflects the draft.
-- **Wallet picker:** native dialog, EIP-6963 wallet rows, locally bundled marks, mobile app links and a lazily loaded Coinbase Smart Wallet SDK. Escape, close button and backdrop dismiss it; focus returns to Connect. The mobile sheet has at least 52 px wallet rows.
+- **Wallet picker:** native dialog, EIP-6963 wallet rows, locally bundled marks, mobile app links and a Coinbase Smart Wallet SDK embedded in `app.js` and initialized on demand. Escape, close button and backdrop dismiss it; focus returns to Connect. The mobile sheet has at least 52 px wallet rows.
 - **Transaction review and receipts:** a native dialog states destination context, amount and network before a wallet prompt. The sender is captured for the workflow. The receipt stack distinguishes confirmation and failure, and links every submitted hash to the explorer. Forms are disabled while a workflow is in progress.
 - **Board and die:** `Board` and `impSVG()` in `site/src/board.ts`. A resolved die tumbles for 900 ms; the Imp then advances floor by floor at 160 ms per step. Motion is not a source of outcomes. Reduced motion skips both animations; the result and table remain.
 - **Tables and feeds:** small, consistent numeric columns and native links. Seats are always shown as 1-based. History totals are explicitly partial until the deployment-to-head scan completes.

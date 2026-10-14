@@ -1,157 +1,135 @@
 {
-  "at": "2026-10-14T14:23:27.066826+00:00",
-  "passed": true,
-  "scope": "Complete tracked and non-ignored working-tree snapshot, measured in a fresh Git repository outside the checkout. No source Git metadata was modified. The bundle is not a reconstruction of unavailable ancestor objects.",
-  "fileCount": 202,
-  "rawSubmissionBytes": 4115274,
-  "limitBytes": 8388608,
-  "completeSnapshotBundleBytes": 1335442,
-  "budgetRemainingBytes": 7053166,
-  "budgetMethod": "Self-contained Git bundle containing every submission file, plus an uncompressed current-tree bound. This report itself and later documentation copies add less than 100 KiB.",
-  "runtimeBytes": 808410,
-  "runtimeFileCount": 26,
-  "runtimeMatchesSite": true,
-  "protectedChanges": [],
-  "changedTrackedPaths": [
-    "README.md"
-  ],
-  "submodules": false,
-  "ignoreChanges": false,
-  "dependencyCachesOrArchives": false,
-  "relativeHTMLAssetURLs": [
-    "./assets/favicon.svg",
-    "./fonts/geist-latin-wght-normal.woff2",
-    "./style.css",
-    "./app.js"
-  ],
-  "runtime": [
+  "label": "pvp-pad",
+  "fileCount": 24,
+  "totalFileBytes": 1184875,
+  "bundles": [
     {
-      "path": "dist/abi.json",
+      "file": "app.js",
+      "runtimeImports": 0
+    },
+    {
+      "file": "salt-worker.js",
+      "runtimeImports": 0
+    }
+  ],
+  "files": [
+    {
+      "file": "abi.json",
       "bytes": 45265,
       "sha256": "ff0ef8746cbd0adda853a56eb9eaff61c81c346d263ac20d2856b3f0f447dd28"
     },
     {
-      "path": "dist/app.js",
-      "bytes": 70154,
-      "sha256": "2444bcb5e1038c1b4b04b5fee4d70fb4897b8c1772dc0f8a5ca6efc7d5d43d83"
+      "file": "app.js",
+      "bytes": 569100,
+      "sha256": "2014884c8a2000db0c1c583feb81d85a29df37aba90b8526091db90adbc4d23c"
     },
     {
-      "path": "dist/assets/Spireth-LICENSE.txt",
-      "bytes": 1068,
-      "sha256": "027acc7f4d41465d312f16b0a3f3859c5e2e79916aed72ae8ce84e225eff98af"
-    },
-    {
-      "path": "dist/assets/favicon.svg",
+      "file": "assets/favicon.svg",
       "bytes": 301,
       "sha256": "3111782933c4e0ea48b294a8d36d335402df13987624ef7e55bfa97d56933f7e"
     },
     {
-      "path": "dist/assets/social.png",
+      "file": "assets/social.png",
       "bytes": 42862,
       "sha256": "f1ab96effd96262415b370ba594e25ac96e262741e2f0c2f8cac77cc9e588fd5"
     },
     {
-      "path": "dist/assets/social.svg",
+      "file": "assets/social.svg",
       "bytes": 8884,
       "sha256": "0c9a467866ccc067eecfe5ef815c5fe2985fa253b4600015eecca661e24d34f9"
     },
     {
-      "path": "dist/assets/wallet-coinbase.svg",
+      "file": "assets/Spireth-LICENSE.txt",
+      "bytes": 1068,
+      "sha256": "027acc7f4d41465d312f16b0a3f3859c5e2e79916aed72ae8ce84e225eff98af"
+    },
+    {
+      "file": "assets/wallet-coinbase.svg",
       "bytes": 538,
       "sha256": "74b55347075cbbb2a0292cca0f94459d531afd23586ecfd2fcc670236c590439"
     },
     {
-      "path": "dist/assets/wallet-icons-LICENSE.txt",
+      "file": "assets/wallet-icons-LICENSE.txt",
       "bytes": 1064,
       "sha256": "5095037afa1ba03be36e04305c01ec9ee600e14377738a026482b1a888c4e365"
     },
     {
-      "path": "dist/assets/wallet-metamask.svg",
+      "file": "assets/wallet-metamask.svg",
       "bytes": 1665,
       "sha256": "892c7dfab8c4ca5682878dda3f42f55a75195d7d365e4adb0832845f3a0a2135"
     },
     {
-      "path": "dist/assets/wallet-phantom.svg",
+      "file": "assets/wallet-phantom.svg",
       "bytes": 861,
       "sha256": "f841f8112e131259a2e5123177950099c79487e61e77971f4e193e6c374419eb"
     },
     {
-      "path": "dist/assets/wallet-rabby.svg",
+      "file": "assets/wallet-rabby.svg",
       "bytes": 2290,
       "sha256": "dcae4de88ebfa10cffa1fe28df13d7c8c0b40736ef2b704f1f2fc348e777e443"
     },
     {
-      "path": "dist/config.json",
+      "file": "config.json",
       "bytes": 774,
       "sha256": "4c41e743f853aaee96da962384572b1546e33663242c55a3bf49578962690d9f"
     },
     {
-      "path": "dist/fonts/geist-OFL.txt",
-      "bytes": 4386,
-      "sha256": "cc27b0f563500a9e0658866241d06d05ef20a9efbf8bac47fe0499a65ede5952"
-    },
-    {
-      "path": "dist/fonts/geist-latin-wght-normal.woff2",
+      "file": "fonts/geist-latin-wght-normal.woff2",
       "bytes": 28400,
       "sha256": "0cbbe6286a00f356e98980783cc950a9b693751e04aedfb97d9526ff6dc2b316"
     },
     {
-      "path": "dist/fonts/geist-mono-OFL.txt",
-      "bytes": 4386,
-      "sha256": "cc27b0f563500a9e0658866241d06d05ef20a9efbf8bac47fe0499a65ede5952"
-    },
-    {
-      "path": "dist/fonts/geist-mono-latin-wght-normal.woff2",
+      "file": "fonts/geist-mono-latin-wght-normal.woff2",
       "bytes": 31368,
       "sha256": "e9fb088eeacced307860d82ceedb0ae9ad2ebfa07a7c0a7279c8c961dd9d5fd3"
     },
     {
-      "path": "dist/index.html",
+      "file": "fonts/geist-mono-OFL.txt",
+      "bytes": 4386,
+      "sha256": "cc27b0f563500a9e0658866241d06d05ef20a9efbf8bac47fe0499a65ede5952"
+    },
+    {
+      "file": "fonts/geist-OFL.txt",
+      "bytes": 4386,
+      "sha256": "cc27b0f563500a9e0658866241d06d05ef20a9efbf8bac47fe0499a65ede5952"
+    },
+    {
+      "file": "index.html",
       "bytes": 4779,
       "sha256": "799c2fc1a8959b424881504c2aed76603a0e04fc1b92ad6d01766da843a2c82d"
     },
     {
-      "path": "dist/salt-worker.js",
-      "bytes": 418,
-      "sha256": "71aa53ecf93e3a8f6ccc2be0e12b13d3283bfa9e9169f046c611bd861a65debb"
+      "file": "salt-worker.js",
+      "bytes": 380562,
+      "sha256": "a497427d05bf8e310c5ac33383d4d45f6ead426fff2b9775c72c02d4284316fa"
     },
     {
-      "path": "dist/style.css",
+      "file": "style.css",
       "bytes": 23024,
       "sha256": "54d7f231c78f3cad144087932914d3dca107d3705397efe5a3a53373e806466a"
     },
     {
-      "path": "dist/vendor/Apache-2.0.txt",
+      "file": "vendor/Apache-2.0.txt",
       "bytes": 10897,
       "sha256": "50b6bf8bdb63265ce14953b480b7aaa0271e78f56843b99c184abd3ae5048cd7"
     },
     {
-      "path": "dist/vendor/THIRD-PARTY-NOTICES.txt",
-      "bytes": 18457,
-      "sha256": "c3f3898dca627a9ce79c03a736ad1f0bc92c3871254aab8881818fdd64a1d7df"
-    },
-    {
-      "path": "dist/vendor/coinbase-LICENSE.txt",
+      "file": "vendor/coinbase-LICENSE.txt",
       "bytes": 564,
       "sha256": "52c9940fbc5cb33de73787e6d3e5cf6697d8e3aabab22fb85c609a574fcacaf1"
     },
     {
-      "path": "dist/vendor/coinbase.js",
-      "bytes": 118405,
-      "sha256": "c61297a10ee1cff8e1760d7e313adf86cb9f77bf2ffd374b0dbc326a7423e00c"
-    },
-    {
-      "path": "dist/vendor/ethers-LICENSE.md",
+      "file": "vendor/ethers-LICENSE.md",
       "bytes": 1075,
       "sha256": "44eea86637405118248327fbe9d9fa95d04c7a57221c7e8c155f736db9f1b612"
     },
     {
-      "path": "dist/vendor/ethers.js",
-      "bytes": 384220,
-      "sha256": "ef19ba9003b3873b2266b514a1d52f9bd8e30227cc90c6745faab1fb599f0021"
+      "file": "vendor/THIRD-PARTY-NOTICES.txt",
+      "bytes": 18457,
+      "sha256": "c3f3898dca627a9ce79c03a736ad1f0bc92c3871254aab8881818fdd64a1d7df"
     },
     {
-      "path": "dist/verification.json",
+      "file": "verification.json",
       "bytes": 2305,
       "sha256": "03b82374cced2262fdcbefcf4a7f2a283b80f973a0998bad2ddfaa907a309648"
     }

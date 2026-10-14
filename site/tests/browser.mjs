@@ -11,12 +11,20 @@ const { chromium, webkit } = requireBrowser("playwright");
 const { AxeBuilder } = requireBrowser("@axe-core/playwright");
 const root = resolve(new URL("../..", import.meta.url).pathname);
 const exportDir = resolve(root, "dist");
+const outputDir = resolve(process.env.PVP_CHECK_OUT || "/tmp/pvp-pad-checks");
+const vendorRequests = [];
+const assetFailures = [];
 const server = createServer(async (req, res) => {
   try {
     const path = decodeURIComponent(
       new URL(req.url, "http://localhost").pathname,
     );
     const rel = path.replace(/^\/preview\/?/, "") || "index.html";
+    if (/^vendor\/.*\.js$/.test(rel)) {
+      vendorRequests.push(rel);
+      res.writeHead(404).end();
+      return;
+    }
     const full = resolve(exportDir, rel);
     if (!full.startsWith(exportDir + "/")) {
       res.writeHead(403).end();
@@ -37,14 +45,14 @@ const server = createServer(async (req, res) => {
     );
     res.end(data);
   } catch {
+    assetFailures.push(req.url);
     res.writeHead(404).end();
   }
 });
 await new Promise((r) => server.listen(0, "127.0.0.1", r));
 const url = `http://127.0.0.1:${server.address().port}/preview/`;
-await mkdir(resolve(root, "artifacts"), { recursive: true });
-await mkdir(resolve(root, "test/scratch/browser-checks"), { recursive: true });
-const results = { checks: [], limitations: [], errors: [], axe: [] };
+await mkdir(outputDir, { recursive: true });
+const results = { checkedAt: new Date().toISOString(), checks: [], limitations: [], errors: [], axe: [], vendorRequests, assetFailures };
 let browser;
 async function check(name, fn) {
   try {
@@ -157,7 +165,7 @@ try {
         false,
       );
       await page.screenshot({
-        path: resolve(root, "artifacts/pad-390.png"),
+        path: resolve(outputDir, "pad-390.png"),
         type: "png",
         fullPage: true,
       });
@@ -260,7 +268,7 @@ try {
       assert.equal(mock.state.txs.at(-1).args[0], 8n);
       await page.getByText("Seat #1 moved +3 to 15").waitFor();
       await page.screenshot({
-        path: resolve(root, "artifacts/game-390.png"),
+        path: resolve(outputDir, "game-390.png"),
         type: "png",
         fullPage: true,
       });
@@ -513,7 +521,7 @@ try {
         );
         if (width === 1440)
           await page.screenshot({
-            path: resolve(root, "artifacts/game-1440.png"),
+            path: resolve(outputDir, "game-1440.png"),
             type: "png",
             fullPage: true,
           });
@@ -632,11 +640,21 @@ try {
             .getAttribute("href")
         ).includes("_cmd=open-dapp"),
       );
-      const loaded = await mp.evaluate(async () => {
-        const mod = await import("./vendor/coinbase.js");
-        return typeof mod.createProvider(4663).request === "function";
+      // Exercise the actual bundled connector through its UI, without opening
+      // an external wallet or asking anyone to authenticate/sign.
+      await mp.evaluate(() => {
+        window.open = (url) => {
+          globalThis.__coinbasePopupUrl = String(url);
+          return null; // Simulate the browser blocking the popup.
+        };
       });
-      assert.equal(loaded, true);
+      await mp.getByRole("button", { name: "Coinbase Smart Wallet", exact: true }).click();
+      await mp.waitForFunction(() => !!globalThis.__coinbasePopupUrl);
+      assert.equal(new URL(await mp.evaluate(() => globalThis.__coinbasePopupUrl)).hostname, "keys.coinbase.com");
+      await mp.getByText("Popup was blocked. Try again.", { exact: true }).waitFor();
+      assert.equal(await mp.getByRole("button", { name: "Coinbase Smart Wallet · opening…", exact: true }).isDisabled(), true);
+      // This proves the production SDK reached its popup flow; authentication,
+      // signing and SDK popup recovery are outside this bundling regression.
       await mobile.close();
     },
   );
@@ -674,6 +692,10 @@ try {
       "WebKit could not launch: " + e.message.slice(0, 2000),
     );
   }
+  await check("all interactions and salt mining work with vendor JS unavailable", async () => {
+    assert.deepEqual(vendorRequests, []);
+    assert.deepEqual(assetFailures, []);
+  });
   await context.close();
 } catch (e) {
   console.error(e);
@@ -683,7 +705,7 @@ try {
   await browser?.close();
   server.close();
   await writeFile(
-    resolve(root, "artifacts/browser-results.json"),
+    resolve(outputDir, "browser-results.json"),
     JSON.stringify(results, null, 2) + "\n",
   );
 }

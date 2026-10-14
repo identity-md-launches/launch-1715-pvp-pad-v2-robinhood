@@ -2,6 +2,20 @@
 
 The static frontend for the existing Robinhood Chain deployment is in [site/](site/README.md), with the ready-to-pin production export in `dist/`. See [DESIGN.md](DESIGN.md) for the implemented interface and [site/VALIDATION.md](site/VALIDATION.md) for actual build, interaction and live-read results. Install dependencies outside the repository and rebuild with the commands in the site README. The contracts and their configuration below are unchanged.
 
+The republish build embeds ethers and Coinbase in `app.js`, and embeds the worker's dependencies in `salt-worker.js`. No `vendor/*.js` file is needed at runtime. `dist/` contains all 24 files (1,184,875 bytes) for the existing **pvp-pad** label, with the original config, ABIs, pages, assets and license notices.
+
+```sh
+mkdir -p /tmp/pvp-pad-tools
+cp site/package.json site/package-lock.json /tmp/pvp-pad-tools/
+npm ci --prefix /tmp/pvp-pad-tools
+node site/scripts/typecheck.mjs
+node site/scripts/test.mjs
+node site/scripts/build.mjs
+python3 -m http.server 8080 --directory dist
+```
+
+Open `http://localhost:8080`. The [site README](site/README.md#verify-a-publication) also documents the browser regression tests and a strict per-file hosted/IPFS verification command. The [validation record](site/VALIDATION.md) distinguishes completed local checks from publication and post-publication checks.
+
 # PvP Pad v2
 
 Launchpad on Robinhood Chain (chain id 4663) where every launch is a fast Spireth dice game, all

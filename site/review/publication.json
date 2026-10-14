@@ -1,0 +1,184 @@
+{
+  "checkedAt": "2026-10-14T15:21:13.872587+00:00",
+  "label": "pvp-pad",
+  "passed": false,
+  "status": "publication-refused",
+  "command": "imd site publish dist --name pvp-pad",
+  "exitCode": 2,
+  "output": "refused: imd site publishes this contributor's own site, never a job's work. A job's website is hosted by the plane when the job completes: commit the source and the export in dist/ and submit. There is nothing to publish and nothing to ask an operator for.",
+  "hostedUrl": null,
+  "ipfsCid": null,
+  "totalBytesPinned": null,
+  "exportFileBytes": 1184875,
+  "reason": "The installed publisher refuses job-workspace publication. No new host or CID was returned; post-publication verification could not run.",
+  "files": [
+    {
+      "file": "abi.json",
+      "bytes": 45265,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "app.js",
+      "bytes": 569100,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "assets/favicon.svg",
+      "bytes": 301,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "assets/social.png",
+      "bytes": 42862,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "assets/social.svg",
+      "bytes": 8884,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "assets/Spireth-LICENSE.txt",
+      "bytes": 1068,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "assets/wallet-coinbase.svg",
+      "bytes": 538,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "assets/wallet-icons-LICENSE.txt",
+      "bytes": 1064,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "assets/wallet-metamask.svg",
+      "bytes": 1665,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "assets/wallet-phantom.svg",
+      "bytes": 861,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "assets/wallet-rabby.svg",
+      "bytes": 2290,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "config.json",
+      "bytes": 774,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "fonts/geist-latin-wght-normal.woff2",
+      "bytes": 28400,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "fonts/geist-mono-latin-wght-normal.woff2",
+      "bytes": 31368,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "fonts/geist-mono-OFL.txt",
+      "bytes": 4386,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "fonts/geist-OFL.txt",
+      "bytes": 4386,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "index.html",
+      "bytes": 4779,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "salt-worker.js",
+      "bytes": 380562,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "style.css",
+      "bytes": 23024,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "vendor/Apache-2.0.txt",
+      "bytes": 10897,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "vendor/coinbase-LICENSE.txt",
+      "bytes": 564,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "vendor/ethers-LICENSE.md",
+      "bytes": 1075,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "vendor/THIRD-PARTY-NOTICES.txt",
+      "bytes": 18457,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    },
+    {
+      "file": "verification.json",
+      "bytes": 2305,
+      "hostStatusCode": null,
+      "ipfsGatewayStatusCode": null,
+      "status": "not-fetched-publication-unavailable"
+    }
+  ]
+}

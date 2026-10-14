@@ -104,10 +104,7 @@ export class Wallet {
   }
   async coinbase(silent = false) {
     try {
-      const mod = await import(
-        /* @vite-ignore */ new URL("./vendor/coinbase.js", document.baseURI)
-          .href
-      );
+      const mod = await import("../vendor/coinbase.js");
       await this.connect(
         mod.createProvider(this.config.chainId),
         "coinbase",

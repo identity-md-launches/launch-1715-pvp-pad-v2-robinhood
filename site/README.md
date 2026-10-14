@@ -2,7 +2,7 @@
 
 A wallet-optional interface for the existing PvPPad, PadLiquidity and KingOfThePad deployment on Robinhood Chain 4663. No contract source, deployment, dependency or Foundry configuration was changed. The website contains no backend or indexer.
 
-`site/` contains source and a complete directly servable site. `dist/` is the production export for the job’s IPFS publisher. Both contain relative runtime URLs and hash routing, so a gateway subpath works without rewrites. The publisher should pin the **contents of `dist/`** with `index.html` at the root. The contributor workflow performs publication after submission; no public CID or publication success is claimed by this local build.
+`site/` contains source and a complete directly servable site. `dist/` is the production export for the job’s IPFS publisher. Both contain relative runtime URLs and hash routing, so a gateway subpath works without rewrites. Pin the **entire contents of `dist/`** with `index.html` at the root, retaining the existing label **pvp-pad**. The export is 24 files / 1,184,875 bytes, including notices. See [VALIDATION.md](./VALIDATION.md) for the publication result and verification limitations. The local publishing CLI refused this job with exit 2: only the contributor plane can publish job exports after submission. No new URL/CID or completed live-host verification is claimed.
 
 ## Install, preview and rebuild
 
@@ -15,12 +15,13 @@ npm ci --prefix /tmp/pvp-pad-tools
 node site/scripts/typecheck.mjs
 node site/scripts/test.mjs
 node site/scripts/build.mjs
+node site/scripts/check-export.mjs
 python3 -m http.server 8080 --directory dist
 ```
 
-Open `http://localhost:8080`. `file://` does not support the fetch and module-worker behavior this app needs. Set `PVP_TOOLS` if using another dependency directory. The helper scripts resolve their locked tools from that directory; do not commit a `node_modules` directory or package cache. On this worker the npm launcher lacked execute permission, so the same install was run with `node /opt/node-v22.22.2/lib/node_modules/npm/bin/npm-cli.js`.
+Open `http://localhost:8080`. `file://` does not support the fetch and module-worker behavior this app needs. Set `PVP_TOOLS` if using another dependency directory. The helper scripts resolve their locked tools from that directory; do not commit a `node_modules` directory or package cache. The existing source manifest and lockfile are unchanged.
 
-The build bundles ethers into `site/vendor/ethers.js`, lazily bundles Coinbase’s SDK into `site/vendor/coinbase.js`, builds `app.js` and `salt-worker.js`, copies the local OFL fonts, collects runtime notices and exports only the runtime file allowlist to `dist/`. There are no sourcemaps, dependency tarballs or registry mirrors in the deliverable. The manifest and lockfile are `site/package.json` and `site/package-lock.json`.
+The build regenerates the locked ethers and Coinbase vendor files, then **inlines those files into `app.js`**. Coinbase initializes only when selected, without fetching another script. `salt-worker.js` also contains its own ethers implementation. Code splitting is disabled. The build checks both output dependency graphs and parses the resulting JavaScript to reject static imports, dynamic imports and `importScripts`. The site makes **zero runtime requests for `vendor/*.js`**; those two files remain source build intermediates in `site/vendor/` and are excluded from `dist/`. All vendor LICENSE/notice files remain in the export. Fonts and artwork remain local, and `verification.json` remains required by the existing contract checks. There are no sourcemaps, dependency tarballs or registry mirrors in the export.
 
 The interface uses TypeScript and native browser components, bundled with esbuild to keep the export small. The authoritative editable files are `src/*.ts`, `style.css`, `index.html` and `config.json` inside `site/`. Generated JS is included to make the site immediately servable. Original social artwork is in `assets/social.svg` and its exported PNG; `scripts/social.mjs` regenerates the PNG using a local Playwright installation.
 
@@ -61,11 +62,25 @@ Repeat the browser fixture suite with Playwright 1.58.2 and axe 4.11.0 installed
 ```sh
 npm install --prefix /tmp/pvp-browser playwright@1.58.2 @axe-core/playwright@4.11.0
 PLAYWRIGHT_BROWSERS_PATH=/tmp/pvp-browsers node /tmp/pvp-browser/node_modules/playwright/cli.js install chromium webkit
-PLAYWRIGHT_BROWSERS_PATH=/tmp/pvp-browsers node site/tests/browser.mjs
+forge build --skip test --skip script --out /tmp/pvp-foundry-out --cache-path /tmp/pvp-foundry-cache
+PVP_FOUNDRY_OUT=/tmp/pvp-foundry-out PLAYWRIGHT_BROWSERS_PATH=/tmp/pvp-browsers node site/tests/browser.mjs
 PLAYWRIGHT_BROWSERS_PATH=/tmp/pvp-browsers node site/tests/live.mjs
+node site/tests/hosting.mjs
 ```
 
-`PVP_BROWSER_TOOLS` changes the browser dependency location. These scripts own a short-lived local preview server under `/preview/` and close it. The fixture suite requires the existing Foundry artifacts in `out/`; run the unchanged contract build first. It simulates RPC and EIP-1193 wallets and sends **no live transaction**. The live script only reads the public chain. Reports are written to `artifacts/`; delivered copies live under `site/review/` because this workspace globally excludes `artifacts/` from Git.
+`PVP_BROWSER_TOOLS` changes the browser dependency location. These scripts own a short-lived local preview server under `/preview/` and close it. `PVP_FOUNDRY_OUT` selects the existing contract build artifacts (default `out/`). The fixture simulates RPC and EIP-1193 wallets and sends **no live transaction**. It refuses all vendor JS requests, exercises the real bundled Coinbase button up to a simulated blocked popup, and mines a salt with the production worker. The live script only reads the public chain. Reports default to `/tmp/pvp-pad-checks/`; `PVP_CHECK_OUT` overrides that directory. Reviewed delivery copies are in `site/review/`. WebKit was installed but could not launch because this machine lacks its shared libraries.
+
+## Verify a publication
+
+After the publisher supplies the actual hosted URL and CID, set `PVP_HOST_URL`, `PVP_IPFS_URL` (the gateway directory URL for that CID) and `PVP_IPFS_CID` to those values, then run:
+
+```sh
+node site/scripts/verify-hosting.mjs \
+  --host "$PVP_HOST_URL" --gateway "$PVP_IPFS_URL" --cid "$PVP_IPFS_CID" \
+  --out /tmp/pvp-hosting-verification.json
+```
+
+This fetches the directory page and **every exported file from both endpoints**, including the worker, both fonts, all artwork, JSON manifests and licenses. Every response must be HTTP 200 and match the local file's SHA-256 and length. HTML error responses, even with HTTP 200, fail. The command writes every URL/status/byte count/hash and exits nonzero on any failure. `node site/tests/hosting.mjs` verifies detection of missing fonts, HTML masquerading as JavaScript, a truncated worker and modified config. Export file bytes are not a claim about IPFS DAG overhead or bytes actually pinned; publication must provide the CID before the live check can pass.
 
 ## Attribution
 

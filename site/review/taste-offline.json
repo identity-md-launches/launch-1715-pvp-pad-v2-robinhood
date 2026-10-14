@@ -4,7 +4,7 @@
    "name": "render",
    "passed": true,
    "exitCode": 0,
-   "durationMs": 8041,
+   "durationMs": 8821,
    "output": "renders, no script errors or missing local files\nexternal hosts: rpc.mainnet.chain.robinhood.com"
   },
   {
@@ -46,7 +46,7 @@
    "name": "eyebrows",
    "passed": true,
    "exitCode": 0,
-   "durationMs": 1,
+   "durationMs": 0,
    "output": "no kicker labels above headings"
   },
   {
@@ -74,14 +74,14 @@
    "name": "slogans",
    "passed": true,
    "exitCode": 0,
-   "durationMs": 0,
+   "durationMs": 1,
    "output": "1 two-beat lines; a stack is four or more, so keep the best and cut the rest:\n\"The board awaits. Two bells. One finish.\" (#main > section.hero:nth-of-type(1) > div.hero-board:nth-of-type(2))"
   },
   {
    "name": "repetition",
    "passed": true,
    "exitCode": 0,
-   "durationMs": 1,
+   "durationMs": 0,
    "output": "no repeated lines"
   },
   {
@@ -114,7 +114,7 @@
   }
  ],
  "target": "dist",
- "at": "2026-10-14T14:10:36.000Z",
+ "at": "2026-10-14T15:14:47.069Z",
  "bar": {
   "sizes": 6,
   "strays": 8,
@@ -234,9 +234,9 @@
     },
     {
      "sel": "#main > section:nth-of-type(2) > div.section-head:nth-of-type(1) > a.button.small",
-     "w": 119,
+     "w": 120,
      "h": 54,
-     "cx": 310.7421875,
+     "cx": 310.1328125,
      "cy": 1086.5625,
      "label": "Launch a coin ↗"
     },
@@ -275,9 +275,9 @@
     },
     {
      "sel": "div.shell > footer > div.footer-links:nth-of-type(2) > a:nth-of-type(2)",
-     "w": 109,
+     "w": 111,
      "h": 20,
-     "cx": 174.453125,
+     "cx": 175.5,
      "cy": 1523.625,
      "label": "Verified registry ↗",
      "crowded": false
@@ -406,9 +406,9 @@
     },
     {
      "sel": "#main > section:nth-of-type(2) > div.section-head:nth-of-type(1) > a.button.small",
-     "w": 138,
+     "w": 140,
      "h": 40,
-     "cx": 1271.046875,
+     "cx": 1270,
      "cy": 971.328125,
      "label": "Launch a coin ↗"
     },
@@ -447,9 +447,9 @@
     },
     {
      "sel": "div.shell > footer > div.footer-links:nth-of-type(2) > a:nth-of-type(2)",
-     "w": 109,
+     "w": 111,
      "h": 20,
-     "cx": 254.453125,
+     "cx": 255.5,
      "cy": 1378.03125,
      "label": "Verified registry ↗",
      "crowded": false
@@ -1146,7 +1146,7 @@
    "pill": false,
    "x": 20,
    "y": 1059.375,
-   "w": 211.484375,
+   "w": 210.265625,
    "h": 22,
    "fixed": false,
    "chrome": false,
@@ -1172,7 +1172,7 @@
    "pill": false,
    "x": 20,
    "y": 1089.375,
-   "w": 211.484375,
+   "w": 210.265625,
    "h": 39,
    "fixed": false,
    "chrome": false,
@@ -1196,9 +1196,9 @@
    "inCode": false,
    "heading": false,
    "pill": true,
-   "x": 251.484375,
+   "x": 250.265625,
    "y": 1059.375,
-   "w": 118.515625,
+   "w": 119.734375,
    "h": 54.375,
    "fixed": false,
    "chrome": false,
@@ -1458,7 +1458,7 @@
    "pill": false,
    "x": 120,
    "y": 1513.875,
-   "w": 108.90625,
+   "w": 111,
    "h": 19.5,
    "fixed": false,
    "chrome": true,
@@ -2238,9 +2238,9 @@
    "inCode": false,
    "heading": false,
    "pill": true,
-   "x": 1202.09375,
+   "x": 1200,
    "y": 951.328125,
-   "w": 137.90625,
+   "w": 140,
    "h": 40,
    "fixed": false,
    "chrome": false,
@@ -2500,7 +2500,7 @@
    "pill": false,
    "x": 200,
    "y": 1368.28125,
-   "w": 108.90625,
+   "w": 111,
    "h": 19.5,
    "fixed": false,
    "chrome": true,
